@@ -1,4 +1,4 @@
-import { AuditProfile, AuditResult, FullReport, ToolInput } from './types';
+import { AuditProfile, AuditResult, FullReport } from './types';
 
 export function runAudit(profile: AuditProfile): FullReport {
   let totalMonthlySavings = 0;
