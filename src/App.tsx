@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import SpendForm from './components/SpendForm';
+import AuditResults from './components/AuditResults'; // <-- ADD THIS IMPORT
+import { runAudit } from './lib/auditEngine';
+import { AuditProfile, FullReport } from './lib/types';
+import './index.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [report, setReport] = useState<FullReport | null>(null);
+
+  const handleAuditSubmit = (profile: AuditProfile) => {
+    const results = runAudit(profile);
+    setReport(results);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+            AI Spend Auditor
+          </h1>
+          <p className="mt-3 text-lg text-gray-600">
+            Most startups overpay for AI tools. Find out if you're one of them.
+          </p>
+        </div>
+        
+        {/* Toggle between Form and Results */}
+        {!report ? (
+          <SpendForm onAuditSubmit={handleAuditSubmit} />
+        ) : (
+          <AuditResults report={report} onReset={() => setReport(null)} /> // <-- USE NEW COMPONENT HERE
+        )}
+
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
