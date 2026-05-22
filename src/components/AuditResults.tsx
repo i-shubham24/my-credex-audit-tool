@@ -29,8 +29,9 @@ export default function AuditResults({ report, onReset }: AuditResultsProps) {
         const data = await res.json();
         setAiSummary(data.summary);
       } catch (err) {
+        console.error("AI Summary Fetch Failed:", err); // <-- This satisfies the linter!
         // Graceful fallback if the API fails or you aren't running 'npx vercel dev'
-        setAiSummary(`Based on your audit, you are currently spending $${report.totalMonthlySavings} unnecessarily each month. By optimizing your team's licenses and shifting heavy workloads to direct APIs, you can reclaim significant capital while maintaining the exact same AI capabilities.`);
+        setAiSummary(`Based on your audit, you are currently spending...`);
       }
     };
     
