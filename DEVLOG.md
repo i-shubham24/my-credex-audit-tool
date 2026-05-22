@@ -39,3 +39,23 @@
 - Integrate the Anthropic/OpenAI API for the 100-word personalized summary.
 - Set up the backend (Supabase/Firebase) for lead capture and configure the transactional email service.
 - Conduct my second user interview.
+
+## Day 3 2026-05-22
+**Hours worked:** 4
+**What I did:**
+- Built secure Vercel Serverless Functions (`api/`) to act as a backend, ensuring no API keys are exposed to the client browser.
+- Integrated the Anthropic API (Claude 3 Haiku) to dynamically generate a 100-word personalized audit summary based on the frontend's JSON output. Implemented a text fallback for API timeouts.
+- Set up a Supabase PostgreSQL database to capture user emails and total savings. Implemented a hidden UI honeypot to protect the database from bot spam.
+- Integrated the Resend SDK to automatically dispatch a transactional confirmation email to the user upon successful database insertion.
+- Conducted and documented my second user interview with a startup founder to validate the problem space.
+
+**What I learned:**
+- Vite's default dev server (`npm run dev`) only serves frontend code and will throw 404 errors for backend API routes. I learned how to utilize the Vercel CLI (`npx vercel dev`) to run a local simulator that bridges the React frontend with the Node.js serverless backend.
+- Supabase strictly enforces Row Level Security (RLS) by default, which blocks anonymous API inserts. I had to manage database policies to securely allow the frontend to write to the `leads` table.
+
+**Blockers / what I'm stuck on:**
+- Unblocked. The end-to-end data pipeline is fully operational.
+
+**Plan for tomorrow:**
+- Implement the PDF/CSV export functionality for the audit report.
+- Polish the UI state handling (loading spinners, error toasts) to make the app feel like a premium SaaS product.

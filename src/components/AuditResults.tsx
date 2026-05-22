@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 import { FullReport, AuditResult } from '../lib/types';
-import { TrendingDown, CheckCircle, ArrowRight, DollarSign, AlertCircle, Sparkles } from 'lucide-react';
+import { TrendingDown, CheckCircle, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 
 interface AuditResultsProps {
   report: FullReport;
@@ -7,8 +9,71 @@ interface AuditResultsProps {
 }
 
 export default function AuditResults({ report, onReset }: AuditResultsProps) {
-  const isHighlyOptimized = report.totalMonthlySavings < 100;
-  const isHighSavings = report.totalMonthlySavings > 500;
+  const [email, setEmail] = useState('');
+  const [honeyPot, setHoneyPot] = useState(''); // Abuse protection: bots fill this, humans don't see it
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [aiSummary, setAiSummary] = useState<string>('Analyzing your stack...');
+
+  // Fetch the AI summary from your secure Vercel endpoint
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const res = await fetch('/api/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ report })
+        });
+        
+        if (!res.ok) throw new Error('Network response was not ok');
+        
+        const data = await res.json();
+        setAiSummary(data.summary);
+      } catch (err) {
+        // Graceful fallback if the API fails or you aren't running 'npx vercel dev'
+        setAiSummary(`Based on your audit, you are currently spending $${report.totalMonthlySavings} unnecessarily each month. By optimizing your team's licenses and shifting heavy workloads to direct APIs, you can reclaim significant capital while maintaining the exact same AI capabilities.`);
+      }
+    };
+    
+    if (report) {
+      fetchSummary();
+    }
+  }, [report]);
+
+  // Handle saving the lead to Supabase AND triggering the confirmation email
+  const handleLeadCapture = async () => {
+    if (!email || honeyPot) return; // If honeypot has text, it's a bot. Stop execution silently.
+    
+    setStatus('loading');
+
+    // 1. Save to Supabase Database
+    const { error } = await supabase
+      .from('leads')
+      .insert([{ email, total_savings: report.totalMonthlySavings }]);
+
+    if (error) {
+      console.error("Supabase Error:", error);
+      setStatus('idle');
+      alert("Something went wrong saving your email. Please try again.");
+      return;
+    }
+
+    // 2. Trigger the automated email via Vercel Serverless Function
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: email,
+          savings: report.totalMonthlySavings.toLocaleString() 
+        })
+      });
+    } catch (emailError) {
+      console.error("Email sending failed silently:", emailError);
+      // We don't alert the user here because their data was still saved to the database successfully
+    }
+
+    setStatus('success');
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -66,44 +131,60 @@ export default function AuditResults({ report, onReset }: AuditResultsProps) {
         ))}
       </div>
 
-      {/* Dynamic CTA Section based on savings amount */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        {isHighlyOptimized ? (
-          <div className="p-8 text-center bg-gray-50">
+      {/* AI Summary Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 shadow-sm">
+        <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center">
+          <Sparkles className="w-4 h-4 mr-2" /> AI Auditor Note
+        </h3>
+        <p className="text-blue-800 text-sm leading-relaxed">{aiSummary}</p>
+      </div>
+
+      {/* Lead Capture Section */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden p-8 text-center">
+        {status === 'success' ? (
+          <div className="animate-in fade-in slide-in-from-bottom-2">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">You're spending well.</h3>
-            <p className="text-gray-600 mb-6">Your AI stack is highly optimized for your current usage. We won't try to manufacture savings that aren't there.</p>
-            <div className="max-w-md mx-auto relative">
-              <input type="email" placeholder="Enter email for optimization alerts" className="w-full pl-4 pr-32 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none" />
-              <button className="absolute right-1 top-1 bottom-1 bg-black text-white px-4 rounded-md font-medium text-sm hover:bg-gray-800">
-                Notify Me
-              </button>
-            </div>
-          </div>
-        ) : isHighSavings ? (
-          <div className="p-8 text-center bg-blue-50 border-t-4 border-blue-600">
-            <Sparkles className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Unlock wholesale pricing.</h3>
-            <p className="text-blue-800 mb-6 font-medium">You have significant savings potential. Credex can route your volume through wholesale API credits to capture this.</p>
-            <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 flex items-center mx-auto transition-transform hover:-translate-y-0.5">
-              Book Credex Consultation <ArrowRight className="w-5 h-5 ml-2" />
-            </button>
+            <h3 className="text-xl font-bold text-gray-900">Report Sent!</h3>
+            <p className="text-gray-600 mt-2">Check your inbox. Our team will review your stack and reach out shortly.</p>
           </div>
         ) : (
-          <div className="p-8 text-center">
-            <DollarSign className="w-12 h-12 text-gray-900 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Save this report</h3>
-            <p className="text-gray-600 mb-6">Enter your email to get a PDF copy of this audit and a step-by-step guide to downgrading these plans.</p>
-            <div className="max-w-md mx-auto relative">
-              <input type="email" placeholder="founder@startup.com" className="w-full pl-4 pr-32 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none" />
-              <button className="absolute right-1 top-1 bottom-1 bg-black text-white px-4 rounded-md font-medium text-sm hover:bg-gray-800 transition-colors">
-                Send Report
+          <>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Capture your full report</h3>
+            <p className="text-gray-600 mb-6 text-sm">Enter your email to get a PDF copy of this audit and our step-by-step downgrade guide.</p>
+            
+            <div className="max-w-md mx-auto relative flex flex-col space-y-3">
+              {/* HONEYPOT: Hidden from humans, bots will fill this in */}
+              <input 
+                type="text" 
+                name="user_company_website" 
+                value={honeyPot}
+                onChange={(e) => setHoneyPot(e.target.value)}
+                style={{ display: 'none' }} 
+                tabIndex={-1} 
+                autoComplete="off" 
+              />
+              
+              <input 
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="founder@startup.com" 
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none transition-all" 
+                disabled={status === 'loading'}
+              />
+              <button 
+                onClick={handleLeadCapture}
+                disabled={status === 'loading'}
+                className="w-full bg-black text-white px-4 py-3 rounded-md font-bold hover:bg-gray-800 transition-colors disabled:bg-gray-400 flex items-center justify-center"
+              >
+                {status === 'loading' ? 'Saving...' : 'Send Report'}
               </button>
             </div>
-          </div>
+          </>
         )}
       </div>
 
+      {/* Reset Audit Button */}
       <button 
         onClick={onReset}
         className="w-full text-center text-gray-500 hover:text-gray-900 font-medium py-4 transition-colors"
