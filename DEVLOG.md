@@ -59,3 +59,19 @@
 **Plan for tomorrow:**
 - Implement the PDF/CSV export functionality for the audit report.
 - Polish the UI state handling (loading spinners, error toasts) to make the app feel like a premium SaaS product.
+
+## Day 4 2026-05-23
+**Hours worked:** 3
+**What I did:**
+- Implemented client-side PDF generation using `jspdf` and `html2canvas` to fulfill MVP Feature 6 (Export Data).
+- Replaced native browser alerts with `react-hot-toast` for premium, non-blocking UI notifications and loading states.
+- Refactored `AuditResults.tsx` by extracting the UI into single-responsibility components (`HeroSavings`, `AuditBreakdown`, and `LeadCaptureForm`) to improve maintainability and strictly separate concerns.
+
+**What I learned:**
+- Client-side PDF generation relies heavily on DOM refs to capture the visual state of the application. I learned how to isolate specific components inside a React `useRef` to exclude interactive elements (like forms and buttons) from the printed report.
+
+**Blockers / what I'm stuck on:**
+- No blockers. The application logic is sound, and the architecture is clean.
+
+**Plan for tomorrow:**
+- Finalize the responsive mobile design tweaks and begin overall polish for deployment readiness.
