@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Lock, Users, ArrowRight, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
