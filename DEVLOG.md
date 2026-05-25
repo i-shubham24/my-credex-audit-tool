@@ -75,3 +75,20 @@
 
 **Plan for tomorrow:**
 - Finalize the responsive mobile design tweaks and begin overall polish for deployment readiness.
+
+## Day 5 2026-05-24
+**Hours worked:** 3
+**What I did:**
+- Installed and configured `react-router-dom` to transition the application from a single-page layout to a multi-route architecture (`/` for the public tool, `/admin` for the internal dashboard).
+- Built a secure internal Admin Dashboard to fetch, parse, and display captured leads directly from the Supabase `leads` table.
+- Implemented a lightweight, state-based passcode gateway to protect the `/admin` route from unauthorized access.
+- Resolved strict TypeScript interface errors (`toolId`, `annualSavings`, `credexEligible`) during the component refactoring, ensuring the mock data perfectly matched the expected payload.
+
+**What I learned:**
+- I learned how to transition a monolithic React app into a scalable, multi-page routing structure. I also learned how to execute read queries (`.select()`) in Supabase and order the returned data by timestamps to build an effective internal data table.
+
+**Blockers / what I'm stuck on:**
+- Unblocked. Encountered a few TypeScript strict-typing errors during the refactor, but it reinforced the value of TS in preventing incomplete data payloads from crashing the UI at runtime.
+
+**Plan for tomorrow:**
+- Implement edge-case protections: a custom 404 Catch-All route, "Skeleton" loading states for the admin dashboard, and logical handlers for "$0 savings" edge cases.
