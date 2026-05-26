@@ -26,7 +26,8 @@ export default function AuditResults({ report, onReset }: { report: FullReport, 
         });
         const data = await res.json();
         setAiSummary(data.summary);
-      } catch (err) {
+      } catch {
+        // Removed the unused (err) variable
         setAiSummary(isOptimized ? "Perfectly optimized stack. No redundant licenses detected." : `Identified $${report.totalMonthlySavings} in potential savings.`);
       }
     };
@@ -44,7 +45,8 @@ export default function AuditResults({ report, onReset }: { report: FullReport, 
       pdf.save('AI-Audit-Report.pdf');
       toast.dismiss(loadingToast);
       toast.success("Download started!");
-    } catch (e) {
+    } catch {
+      // Removed the unused (e) variable
       toast.dismiss(loadingToast);
       toast.error("Export failed.");
     } finally {

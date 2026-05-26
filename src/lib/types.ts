@@ -1,33 +1,31 @@
-export type UseCase = 'coding' | 'writing' | 'data' | 'research' | 'mixed';
-export type ToolName = 'Cursor' | 'GitHub Copilot' | 'Claude' | 'ChatGPT' | 'Anthropic API' | 'OpenAI API' | 'Gemini' | 'v0';
+// src/lib/types.ts
 
-export interface ToolInput {
-  id: string;
-  name: ToolName;
-  plan: string;
-  monthlySpend: number;
-  seats: number;
+// 1. Define what a single selected tool looks like
+export interface SelectedTool {
+  toolId: string;
+  planId: string;
 }
 
+// 2. Add the array of SelectedTools to the AuditProfile
 export interface AuditProfile {
   teamSize: number;
-  primaryUseCase: UseCase;
-  tools: ToolInput[];
+  selectedTools: SelectedTool[]; // <-- This is the exact line fixing your error
 }
 
+// 3. Define the resulting audit data
 export interface AuditResult {
   toolId: string;
   toolName: string;
   currentSpend: number;
-  recommendedAction: string;
-  reason: string;
   monthlySavings: number;
   annualSavings: number;
+  recommendedAction: string;
+  reason: string;
 }
 
 export interface FullReport {
-  results: AuditResult[];
   totalMonthlySavings: number;
   totalAnnualSavings: number;
   credexEligible: boolean;
+  results: AuditResult[];
 }
