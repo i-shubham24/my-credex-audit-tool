@@ -1,115 +1,51 @@
-import { useState, useEffect } from 'react';
-import { AuditProfile, ToolInput, UseCase, ToolName } from '../lib/types';
+import { useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react'; 
+import { SUPPORTED_TOOLS } from '../lib/constants';
 
-export default function SpendForm({ onAuditSubmit }: { onAuditSubmit: (data: AuditProfile) => void }) {
-  const [profile, setProfile] = useState<AuditProfile>(() => {
-    const saved = localStorage.getItem('credex_audit_form');
-    if (saved) return JSON.parse(saved);
-    return { teamSize: 1, primaryUseCase: 'coding', tools: [] };
-  });
+export default function SpendForm({ onAuditSubmit }: { onAuditSubmit: (data: any) => void }) {
+  const [teamSize, setTeamSize] = useState(10);
+  const [selectedTools, setSelectedTools] = useState([{ toolId: 'openai', planId: 'plus' }]);
 
-  useEffect(() => {
-    localStorage.setItem('credex_audit_form', JSON.stringify(profile));
-  }, [profile]);
-
-  const addTool = () => {
-    const newTool: ToolInput = {
-      id: crypto.randomUUID(),
-      name: 'ChatGPT',
-      plan: 'Plus',
-      monthlySpend: 20,
-      seats: 1
-    };
-    setProfile({ ...profile, tools: [...profile.tools, newTool] });
-  };
-
-  const updateTool = (id: string, field: keyof ToolInput, value: string | number) => {
-    const updatedTools = profile.tools.map(t => t.id === id ? { ...t, [field]: value } : t);
-    setProfile({ ...profile, tools: updatedTools });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onAuditSubmit(profile);
+  const updateTool = (index: number, field: string, value: string) => {
+    const newTools = [...selectedTools];
+    (newTools[index] as any)[field] = value;
+    if (field === 'toolId') {
+      newTools[index].planId = SUPPORTED_TOOLS.find(t => t.id === value)?.plans[0].id || '';
+    }
+    setSelectedTools(newTools);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-6 space-y-6 bg-white rounded-xl shadow-md border border-gray-200">
-      <div className="grid grid-cols-2 gap-4 border-b pb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Team Size</label>
-          <input 
-            type="number" 
-            min="1" 
-            value={profile.teamSize} 
-            onChange={(e) => setProfile({...profile, teamSize: Number(e.target.value)})}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Primary Use Case</label>
-          <select 
-            value={profile.primaryUseCase} 
-            onChange={(e) => setProfile({...profile, primaryUseCase: e.target.value as UseCase})}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
-          >
-            <option value="coding">Coding</option>
-            <option value="writing">Writing</option>
-            <option value="data">Data Analysis</option>
-            <option value="research">Research</option>
-            <option value="mixed">Mixed</option>
-          </select>
-        </div>
+    <div className="bg-white rounded-3xl shadow-xl p-8 max-w-2xl mx-auto border border-gray-100">
+      <div className="mb-8">
+        <label className="block text-xs font-black text-gray-400 uppercase mb-2">Team Size</label>
+        <input type="number" value={teamSize} onChange={(e) => setTeamSize(Number(e.target.value))} className="w-full bg-gray-50 p-4 rounded-xl text-2xl font-bold border-2 border-transparent focus:border-black outline-none" />
       </div>
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Your AI Stack</h3>
-        {profile.tools.map((tool) => (
-          <div key={tool.id} className="grid grid-cols-4 gap-4 bg-gray-50 p-4 rounded-md">
-            <select 
-              value={tool.name} 
-              onChange={(e) => updateTool(tool.id, 'name', e.target.value as ToolName)}
-              className="p-2 border rounded-md"
-            >
-              <option value="Cursor">Cursor</option>
-              <option value="ChatGPT">ChatGPT</option>
-              <option value="Claude">Claude</option>
-              <option value="GitHub Copilot">GitHub Copilot</option>
+      <div className="space-y-3 mb-8">
+        <label className="block text-xs font-black text-gray-400 uppercase">Active Subscriptions</label>
+        {selectedTools.map((sel, idx) => (
+          <div key={idx} className="flex gap-2 animate-in slide-in-from-left-2">
+            <select value={sel.toolId} onChange={(e) => updateTool(idx, 'toolId', e.target.value)} className="flex-1 bg-gray-50 p-3 rounded-xl font-bold">
+              {SUPPORTED_TOOLS.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
-            <input 
-              type="text" 
-              value={tool.plan} 
-              onChange={(e) => updateTool(tool.id, 'plan', e.target.value)} 
-              placeholder="Plan (e.g. Pro)"
-              className="p-2 border rounded-md"
-            />
-            <input 
-              type="number" 
-              value={tool.seats} 
-              onChange={(e) => updateTool(tool.id, 'seats', Number(e.target.value))} 
-              placeholder="Seats"
-              className="p-2 border rounded-md"
-            />
-            <div className="flex items-center space-x-2">
-              <span className="text-gray-500">$</span>
-              <input 
-                type="number" 
-                value={tool.monthlySpend} 
-                onChange={(e) => updateTool(tool.id, 'monthlySpend', Number(e.target.value))} 
-                className="p-2 border rounded-md w-full"
-              />
-            </div>
+            <select value={sel.planId} onChange={(e) => updateTool(idx, 'planId', e.target.value)} className="flex-1 bg-gray-50 p-3 rounded-xl font-bold">
+              {SUPPORTED_TOOLS.find(t => t.id === sel.toolId)?.plans.map(p => <option key={p.id} value={p.id}>{p.name} (${p.price})</option>)}
+            </select>
+            <button onClick={() => setSelectedTools(selectedTools.filter((_, i) => i !== idx))} className="p-3 text-gray-300 hover:text-red-500">
+              <Trash2 className="w-5 h-5" />
+            </button>
           </div>
         ))}
-        
-        <button type="button" onClick={addTool} className="mt-2 text-sm text-blue-600 hover:text-blue-500 font-medium">
-          + Add Tool
-        </button>
       </div>
 
-      <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-        Run Free Audit
+      <button onClick={() => setSelectedTools([...selectedTools, { toolId: 'openai', planId: 'plus' }])} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold hover:border-black hover:text-black mb-6 transition-all flex items-center justify-center">
+        <Plus className="w-5 h-5 mr-2" /> Add Tool
       </button>
-    </form>
+      
+      <button onClick={() => onAuditSubmit({ teamSize, selectedTools })} className="w-full bg-black text-white py-4 rounded-2xl font-black text-xl flex items-center justify-center hover:scale-[1.02] shadow-lg transition-transform">
+        Run AI Audit
+      </button>
+    </div>
   );
 }

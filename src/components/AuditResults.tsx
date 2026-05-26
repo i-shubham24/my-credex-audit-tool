@@ -1,109 +1,89 @@
 import { useState, useEffect, useRef } from 'react';
 import { FullReport } from '../lib/types';
-import { Sparkles, Download } from 'lucide-react';
+import { Zap, Download, CheckCircle } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
 
-// Import our new clean components
 import HeroSavings from './HeroSavings';
 import AuditBreakdown from './AuditBreakdown';
 import LeadCaptureForm from './LeadCaptureForm';
 
-interface AuditResultsProps {
-  report: FullReport;
-  onReset: () => void;
-}
-
-export default function AuditResults({ report, onReset }: AuditResultsProps) {
-  const [aiSummary, setAiSummary] = useState<string>('Analyzing your stack...');
+export default function AuditResults({ report, onReset }: { report: FullReport, onReset: () => void }) {
+  const [aiSummary, setAiSummary] = useState<string>('Analyzing stack...');
   const [isExporting, setIsExporting] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
+  
+  const isOptimized = report.totalMonthlySavings === 0;
 
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        const res = await fetch('/api/summary', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ report })
+        const res = await fetch('/api/summary', { 
+          method: 'POST', 
+          headers: {'Content-Type': 'application/json'}, 
+          body: JSON.stringify({ report }) 
         });
-        if (!res.ok) throw new Error('Network error');
         const data = await res.json();
         setAiSummary(data.summary);
       } catch (err) {
-        console.error("AI Fetch Failed:", err);
-        setAiSummary(`Based on your audit, you are currently spending $${report.totalMonthlySavings} unnecessarily each month.`);
+        setAiSummary(isOptimized ? "Perfectly optimized stack. No redundant licenses detected." : `Identified $${report.totalMonthlySavings} in potential savings.`);
       }
     };
-    if (report) fetchSummary();
-  }, [report]);
+    fetchSummary();
+  }, [report, isOptimized]);
 
   const handleDownloadPDF = async () => {
     if (!reportRef.current) return;
     setIsExporting(true);
-    const loadingToast = toast.loading("Generating your PDF...");
-    
+    const loadingToast = toast.loading("Generating PDF...");
     try {
-      const canvas = await html2canvas(reportRef.current, { 
-        scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff'
-      });
-      const imgData = canvas.toDataURL('image/png');
+      const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('Credex-AI-Spend-Audit.pdf');
-      
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
+      pdf.save('AI-Audit-Report.pdf');
       toast.dismiss(loadingToast);
-      toast.success("PDF downloaded successfully!");
-    } catch (error) {
-      console.error('PDF Failed:', error);
+      toast.success("Download started!");
+    } catch (e) {
       toast.dismiss(loadingToast);
-      toast.error('Failed to generate PDF.');
+      toast.error("Export failed.");
     } finally {
       setIsExporting(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
+    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-end">
-        <button 
-          onClick={handleDownloadPDF} disabled={isExporting}
-          className="flex items-center text-sm font-bold text-gray-700 hover:text-black transition-colors bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <button onClick={handleDownloadPDF} disabled={isExporting} className="flex items-center text-sm font-bold bg-white border px-4 py-2 rounded-lg shadow-sm hover:shadow-md disabled:opacity-50">
           <Download className="w-4 h-4 mr-2" />
-          {isExporting ? 'Rendering PDF...' : 'Download PDF Report'}
+          {isExporting ? 'Exporting...' : 'Download PDF Report'}
         </button>
       </div>
 
-      {/* PDF Target Area */}
       <div ref={reportRef} className="space-y-8 bg-white p-4 rounded-xl">
-        <HeroSavings 
-          annualSavings={report.totalAnnualSavings} 
-          monthlySavings={report.totalMonthlySavings} 
-        />
+        {isOptimized ? (
+          <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-2xl p-8 text-center text-white shadow-xl">
+            <CheckCircle className="w-16 h-16 mx-auto mb-4 opacity-90" />
+            <h2 className="text-3xl font-black mb-2">Fully Optimized!</h2>
+            <p className="text-green-100">Your AI stack is lean and efficient.</p>
+          </div>
+        ) : (
+          <HeroSavings annualSavings={report.totalAnnualSavings} monthlySavings={report.totalMonthlySavings} />
+        )}
         
         <AuditBreakdown results={report.results} />
-
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 shadow-sm">
-          <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center">
-            <Sparkles className="w-4 h-4 mr-2" /> AI Auditor Note
+        
+        <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+          <h3 className="text-sm font-bold text-indigo-900 uppercase tracking-widest mb-2 flex items-center">
+            <Zap className="w-4 h-4 mr-2" /> AI Summary
           </h3>
-          <p className="text-blue-800 text-sm leading-relaxed">{aiSummary}</p>
+          <p className="text-indigo-800 text-sm leading-relaxed">{aiSummary}</p>
         </div>
       </div> 
 
-      {/* External Form */}
       <LeadCaptureForm monthlySavings={report.totalMonthlySavings} />
-
-      <button onClick={onReset} className="w-full text-center text-gray-500 hover:text-gray-900 font-medium py-4 transition-colors">
-        ← Run another audit
-      </button>
-
+      <button onClick={onReset} className="w-full text-center text-gray-500 hover:text-gray-900 font-medium py-4">← Start New Audit</button>
     </div>
   );
 }
