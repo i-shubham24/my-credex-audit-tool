@@ -10,6 +10,11 @@ export const SUPPORTED_TOOLS = [
     plans: [{id:'pro', name:'Pro', price:20}, {id:'team', name:'Team', price:30}, {id:'enterprise', name:'Enterprise', price:75}] 
   },
   { 
+    id: 'gemini', 
+    name: 'Google Gemini', 
+    plans: [{id:'advanced', name:'Advanced', price:20}, {id:'enterprise', name:'Enterprise', price:30}] 
+  },
+  { 
     id: 'cursor', 
     name: 'Cursor (AI Code Editor)', 
     plans: [{id:'pro', name:'Pro', price:20}, {id:'business', name:'Business', price:40}] 

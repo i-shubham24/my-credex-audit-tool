@@ -33,6 +33,8 @@ This document serves as the central source of truth for the AI tool pricing tier
 | **Antigravity** | Base | $30 |
 | | Enterprise | $80 |
 | **OpenAI Codex** | API Usage (Est) | $5 |
+| **Google Gemini** | Advanced | $20 |
+| | Enterprise | $30 |
 
 ---
 
