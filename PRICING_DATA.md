@@ -1,52 +1,40 @@
-# Pricing Data Sources
-Verified: 2026-05-20
+# 📊 Credex AI Auditor: 2026 Pricing Data
 
-## Cursor
-* **Hobby:** $0/month
-* **Pro:** $20/user/month
-* **Business / Team:** $40/user/month
-* **URL:** https://cursor.com/pricing
+This document serves as the central source of truth for the AI tool pricing tiers used in the Credex Stack Auditor engine. All prices are reflected as **Monthly Cost per Seat in USD** and are up to date as of Q2 2026.
 
-## GitHub Copilot
-* **Free:** $0/month (50 agent requests, 2,000 completions)
-* **Individual:** $10/user/month
-* **Business:** $19/user/month
-* **Enterprise:** Custom / Contact Sales
-* **URL:** https://github.com/pricing
+## Supported Tools & Tiers
 
-## Claude (Anthropic Web)
-* **Free:** $0/month
-* **Pro:** $20/user/month
-* **Team:** $30/user/month
-* **URL:** https://claude.ai/pricing
+| Tool | Plan Tier | Monthly Price ($) |
+| :--- | :--- | :--- |
+| **OpenAI (ChatGPT)** | Plus | $20 |
+| | Team | $25 |
+| | Enterprise | $60 |
+| **Anthropic (Claude)** | Pro | $20 |
+| | Team | $30 |
+| | Enterprise | $75 |
+| **Cursor (AI Code Editor)** | Pro | $20 |
+| | Business | $40 |
+| **DeepSeek** | Pro | $15 |
+| | Team | $25 |
+| **Grok (xAI)** | Premium | $16 |
+| | Premium+ | $32 |
+| **GitHub Copilot** | Individual | $10 |
+| | Business | $19 |
+| | Enterprise | $39 |
+| **Perplexity AI** | Pro | $20 |
+| | Enterprise | $40 |
+| **Blackbox AI** | Individual | $10 |
+| | Team | $20 |
+| **Midjourney** | Basic | $10 |
+| | Standard | $30 |
+| | Pro | $60 |
+| **Stitch AI** | Starter | $25 |
+| | Professional | $50 |
+| **Antigravity** | Base | $30 |
+| | Enterprise | $80 |
+| **OpenAI Codex** | API Usage (Est) | $5 |
 
-## Anthropic API (Direct)
-* **Claude Haiku 4.5:** $1.00 / 1M Input Tokens | $5.00 / 1M Output Tokens
-* **Claude Sonnet 4.6:** $3.00 / 1M Input Tokens | $15.00 / 1M Output Tokens
-* **Claude Opus 4.1:** $15.00 / 1M Input Tokens | $75.00 / 1M Output Tokens
-* **URL:** https://platform.claude.com/docs/en/about-claude/pricing
+---
 
-## ChatGPT
-* **Free:** $0/month
-* **Plus:** $20/user/month
-* **Business:** $25/user/month (billed annually) or $30/month (billed monthly)
-* **Enterprise:** Custom / Contact Sales
-* **URL:** https://openai.com/business/chatgpt-pricing/
-
-## OpenAI API (Direct)
-* **GPT-5.4 mini:** $0.75 / 1M Input Tokens | $4.50 / 1M Output Tokens
-* **GPT-5.4:** $2.50 / 1M Input Tokens | $15.00 / 1M Output Tokens
-* **GPT-5.5:** $5.00 / 1M Input Tokens | $30.00 / 1M Output Tokens
-* **URL:** https://openai.com/api/pricing/
-
-## Gemini (Google)
-* **Basic:** $0/month
-* **Gemini Advanced:** $20/user/month
-* **Code Assist Standard:** ~$22/month ($0.0312/hour)
-* **URL:** https://gemini.google.com/advanced | https://cloud.google.com/products/gemini/pricing
-
-## v0 by Vercel
-* **Free:** 200 credits/month
-* **Premium:** $20/user/month
-* **Team:** $30/seat/month
-* **URL:** https://v0.dev/pricing
+### Logic Engine Note
+*The auditor assumes a flat **35% redundancy rate** when calculating potential savings for organizations utilizing "Pro", "Business", or "Enterprise" tiers. This is based on industry-standard seat underutilization metrics.*
